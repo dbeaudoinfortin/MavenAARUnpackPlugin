@@ -8,16 +8,16 @@ Add the following to the `plugins` section of your `pom.xml`:
 
 ```xml
 <plugin>
-	<groupId>io.github.dbeaudoinfortin</groupId>
-	<artifactId>maven-aar-unpack-plugin</artifactId>
-	<version>0.0.1</version>
-	<executions>
-		<execution>
-			<id>aar-unpack</id>
-			<phase>process-sources</phase>
-			<goals><goal>aar-unpack</goal></goals>
-		</execution>
-	</executions>		
+  <groupId>io.github.dbeaudoinfortin</groupId>
+  <artifactId>maven-aar-unpack-plugin</artifactId>
+  <version>0.0.1</version>
+  <executions>
+    <execution>
+      <id>aar-unpack</id>
+      <phase>process-sources</phase>
+      <goals><goal>aar-unpack</goal></goals>
+    </execution>
+  </executions>    
 </plugin>
 ```
 
@@ -37,8 +37,8 @@ If your AAR comes from the Google Maven repository then you might need to declar
 
 ```xml
 <repository>
-	<id>google</id>
-	<url>https://maven.google.com</url>
+  <id>google</id>
+  <url>https://maven.google.com</url>
 </repository>
 ```
 
@@ -52,24 +52,24 @@ As an alternative to declaring AARs as project dependencies, they can be explici
 
 ```xml
 <plugin>
-	<groupId>io.github.dbeaudoinfortin</groupId>
-	<artifactId>maven-aar-unpack-plugin</artifactId>
-	<version>0.0.1</version>
-	<executions>
-		<execution>
-			<id>aar-unpack</id>
-			<phase>process-sources</phase>
-			<configuration>
-				<aars>
-					<aar>androidx.graphics:graphics-core:1.0.2</aar>
-					<aar>androidx.graphics:graphics-shapes-android:1.0.1</aar>
-				</aars>
-			</configuration>
-			<goals>
-				<goal>aar-unpack</goal>
-			</goals>
-		</execution>
-	</executions>
+  <groupId>io.github.dbeaudoinfortin</groupId>
+  <artifactId>maven-aar-unpack-plugin</artifactId>
+  <version>0.0.1</version>
+  <executions>
+    <execution>
+      <id>aar-unpack</id>
+      <phase>process-sources</phase>
+      <configuration>
+        <aars>
+          <aar>androidx.graphics:graphics-core:1.0.2</aar>
+          <aar>androidx.graphics:graphics-shapes-android:1.0.1</aar>
+        </aars>
+      </configuration>
+      <goals>
+        <goal>aar-unpack</goal>
+      </goals>
+    </execution>
+  </executions>
 </plugin>
 ```
 When explicitly declaring AARs, project dependencies will not be scanned. Declaring AARs using both methods may cause compilation issues.
