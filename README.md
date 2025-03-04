@@ -10,7 +10,7 @@ Add the following to the `plugins` section of your `pom.xml`:
 <plugin>
   <groupId>io.github.dbeaudoinfortin</groupId>
   <artifactId>maven-aar-unpack-plugin</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <executions>
     <execution>
       <id>aar-unpack</id>
@@ -54,7 +54,7 @@ As an alternative to declaring AARs as project dependencies, they can be explici
 <plugin>
   <groupId>io.github.dbeaudoinfortin</groupId>
   <artifactId>maven-aar-unpack-plugin</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <executions>
     <execution>
       <id>aar-unpack</id>
@@ -73,6 +73,10 @@ As an alternative to declaring AARs as project dependencies, they can be explici
 </plugin>
 ```
 When explicitly declaring AARs, project dependencies will not be scanned. Declaring AARs using both methods may cause compilation issues.
+
+## Eclipse Support
+
+If you use the Eclipse IDE, you'll want to use my M2E connector for this project. Without it your project will show build errors. You can manually download it from the releases section of my M2EMavenAARPlugin [here](https://github.com/dbeaudoinfortin/M2EMavenAARPlugin/releases). 
 
 ## Legal Stuff
 
