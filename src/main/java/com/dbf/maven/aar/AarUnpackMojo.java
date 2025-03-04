@@ -2,7 +2,10 @@ package com.dbf.maven.aar;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
@@ -37,6 +40,9 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 @SuppressWarnings("deprecation")
 @Mojo(name = "aar-unpack", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class AarUnpackMojo extends AbstractMojo {
+	
+	private static final String CONTEXT_CLASSPATH = "aar-unpack-classpath";
+	private static final String CONTEXT_EXTRACT_DIR = "aar-unpack-extract-dir";
 	
 	//---Configurable parameters---
 	
@@ -81,6 +87,9 @@ public class AarUnpackMojo extends AbstractMojo {
 		//We want to merge the two sets of repos together in case there are special repos defined just for plugins
 		List<RemoteRepository> mergedRepos = mergeRespositories();
 		
+		//Keep track of all of the classpath changes that we are making
+		Set<String> classpathChanges = new HashSet<String>();
+		
 		boolean reloadDependencies = false;
 		if(aars == null || aars.isEmpty()) {
 			//No AAR dependencies were explicitly defined. Automatically scan the project to find AAR dependencies
@@ -90,11 +99,14 @@ public class AarUnpackMojo extends AbstractMojo {
 				
 				//Manually force the resolution of this artifact since Maven can't manually resolve it.
 				Artifact artifact = resolveAAR(new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(), dependency.getClassifier(), "aar", dependency.getVersion()), mergedRepos);
+				final String jarPath = artifact.getFile().getAbsolutePath();
+				classpathChanges.add(jarPath);
 				
 				//Modify the dependency to make it a system look up
 				dependency.setScope("system");
 				dependency.setType("jar");
-				dependency.setSystemPath(artifact.getFile().getAbsolutePath());
+				dependency.setSystemPath(jarPath);
+				
 				reloadDependencies = true;
 			}
 		} else {
@@ -110,7 +122,9 @@ public class AarUnpackMojo extends AbstractMojo {
 		        	
 		        	//Need to override the default extension of jar to aar
 		        	artifact = resolveAAR(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), "aar", artifact.getVersion()), mergedRepos);
-	
+		        	final String jarPath = artifact.getFile().getAbsolutePath();
+					classpathChanges.add(jarPath);
+					
 		        	//Need to add a new dependency to the main project
 		        	//This time it's a jar file making use of a system path
 		        	Dependency dependency = new Dependency();
@@ -118,7 +132,7 @@ public class AarUnpackMojo extends AbstractMojo {
 		        	dependency.setGroupId(artifact.getGroupId());
 		        	dependency.setClassifier(artifact.getClassifier());
 		        	dependency.setVersion(artifact.getVersion());
-		        	dependency.setSystemPath(artifact.getFile().getAbsolutePath());
+		        	dependency.setSystemPath(jarPath);
 		        	dependency.setScope("system");
 					dependency.setType("jar");
 					
@@ -138,6 +152,12 @@ public class AarUnpackMojo extends AbstractMojo {
 			project.setResolvedArtifacts(null);
 			project.setDependencyArtifacts(null);
 		}
+		
+		//Keep track of all of the classpath entries. This is useful for plug-ins. 
+		project.setContextValue(CONTEXT_CLASSPATH, classpathChanges);
+		
+		//Keep track of the directory that was used for extraction
+		project.setContextValue(CONTEXT_EXTRACT_DIR, (new File(extractionDir + File.separator)).getAbsolutePath());
     }
 	
 	/**
