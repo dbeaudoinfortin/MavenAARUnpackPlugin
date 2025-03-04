@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Repository;
 import org.apache.maven.plugin.AbstractMojo;
@@ -56,6 +59,9 @@ public class AarUnpackMojo extends AbstractMojo {
 	//---Injected Classes---
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+	
+	@Inject
+	private MavenSession session;
 	
 	@Inject
     private RepositorySystem repoSystem;
@@ -172,30 +178,52 @@ public class AarUnpackMojo extends AbstractMojo {
         }
     	
 		//Each AAR needs its own sub-directory because they all contain the same classes.jar file inside
-    	File aarDir = new File(extractionDir + File.separator + aarFQN);
+    	File extractDir = new File(extractionDir + File.separator + aarFQN);
   
-    	getLog().info("Extracting AAR \"" + aarFile.getAbsolutePath()  + "\" to \"" + aarDir.getAbsolutePath() + "\".");
+    	getLog().info("Extracting AAR \"" + aarFile.getAbsolutePath()  + "\" to \"" + extractDir.getAbsolutePath() + "\".");
         try {
-        	//Create a unique directory in the target directory
-        	aarDir.mkdirs();
-        	
-        	//Extract the AAR file to a unique directory in the target directory
-        	ZipUnArchiver unArchiver = new ZipUnArchiver(aarFile);
-            unArchiver.setDestDirectory(aarDir);
-            unArchiver.extract();
-            getLog().info("Successfully extracted AAR: " + aarFile.getAbsolutePath());
+        	if(extractDir.exists()) {
+        		if(extractDir.isDirectory()) {
+        			MavenExecutionRequest request = session.getRequest();
+        	        if(request.isUpdateSnapshots()) {
+        	        	//Forcing the update of snapshots
+        	        	getLog().debug("Deleting directory " + extractDir.getAbsolutePath() + "\".");
+        	        	FileUtils.deleteDirectory(extractDir);
+        	        	unZipAAR(aarFile, extractDir);
+        	        }
+        	        //Otherwise do nothing. Use the already extracted AAR
+            	} else {
+            		getLog().warn("Conflicting file found at " + extractDir.getAbsolutePath() + "\".");
+            		getLog().debug("Deleting file " + extractDir.getAbsolutePath() + "\".");
+            		FileUtils.delete(extractDir);
+            		unZipAAR(aarFile, extractDir);
+            	}
+        	} else {
+        		getLog().debug("Creating directory " + extractDir.getAbsolutePath() + "\".");
+        		//Create a unique directory in the target directory
+            	extractDir.mkdirs();
+            	unZipAAR(aarFile, extractDir);
+        	}        	
         } catch (Exception e) {
             throw new MojoExecutionException("Error extracting AAR", e);
         }
         
         //Check if the "classes.jar" file if present
-        File classesJar = new File(aarDir + File.separator + "classes.jar");
+        File classesJar = new File(extractDir + File.separator + "classes.jar");
         if(!classesJar.isFile()) {
         	throw new MojoExecutionException("Missing 'classes.jar' in AAR: " + aarFQN);
         }
         
         //Return the location of the classes.jar file that was just extracted
         return classesJar;
+	}
+	
+	private void unZipAAR(File aarFile, File extractDir) {
+		//Extract the AAR file to a unique directory in the target directory
+    	ZipUnArchiver unArchiver = new ZipUnArchiver(aarFile);
+        unArchiver.setDestDirectory(extractDir);
+        unArchiver.extract();
+        getLog().info("Successfully extracted AAR: " + aarFile.getAbsolutePath());
 	}
 	
 	private Artifact resolveArtifact(Artifact artifact, List<RemoteRepository> repos) throws ArtifactResolutionException {
