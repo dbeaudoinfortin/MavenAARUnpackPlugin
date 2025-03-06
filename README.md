@@ -76,7 +76,11 @@ When explicitly declaring AARs, project dependencies will not be scanned. Declar
 
 ## Eclipse Support
 
-If you use the Eclipse IDE, you'll want to use my M2E connector for this project. Without it your project will show build errors. You can manually download it from the releases section of my [M2EMavenAARPlugin](https://github.com/dbeaudoinfortin/M2EMavenAARPlugin/). 
+If you use the Eclipse IDE, you'll want to use my M2E connector for this project. Without it your project will show build errors. You can manually download it from the releases section of my [M2EMavenAARPlugin](https://github.com/dbeaudoinfortin/M2EMavenAARPlugin/) but you may find it easier to [install it from a site](https://github.com/dbeaudoinfortin/M2EMavenAARPlugin/blob/main/README.md#how-to-install) in Eclispe. 
+
+## Requirements
+
+- Requires Java 8 or later.
 
 ## Legal Stuff
 
