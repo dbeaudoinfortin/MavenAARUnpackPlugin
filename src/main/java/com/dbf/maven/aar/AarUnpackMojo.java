@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
