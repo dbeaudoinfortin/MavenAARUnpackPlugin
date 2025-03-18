@@ -10,7 +10,7 @@ Add the following to the `plugins` section of your `pom.xml`:
 <plugin>
   <groupId>io.github.dbeaudoinfortin</groupId>
   <artifactId>maven-aar-unpack-plugin</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <executions>
     <execution>
       <id>aar-unpack</id>
@@ -54,7 +54,7 @@ As an alternative to declaring AARs as project dependencies, they can be explici
 <plugin>
   <groupId>io.github.dbeaudoinfortin</groupId>
   <artifactId>maven-aar-unpack-plugin</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <executions>
     <execution>
       <id>aar-unpack</id>
