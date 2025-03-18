@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.dbeaudoinfortin</groupId>
 	<artifactId>maven-aar-unpack-plugin</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<packaging>maven-plugin</packaging>
 	<name>Maven AAR Unpack Plugin</name>
 	<description>Maven plugin for unpacking Android Archive Library files.</description>
