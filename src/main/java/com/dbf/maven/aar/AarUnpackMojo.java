@@ -57,7 +57,20 @@ public class AarUnpackMojo extends AbstractMojo {
     private List<String> aars;
 	
 	/**
-     * The target directory for the temporary extraction Android Archive Library files.
+     * Optional parameter to indicate that the sources JARs should also be copied to the
+     * extraction directory, if they exist.
+     * 
+     * Default value is false.
+     */
+	@Parameter(property = "copySources", defaultValue = "false", required = false)
+    private boolean copySources = false;
+	
+	/**
+     * Optional parameter to specify the target directory used for the temporary extraction
+     * Android Archive Library files.
+     * 
+     * Default value is ${project.build.directory}/aar-extracted, typically corresponding to
+     * /target/extracted.
      */
 	@Parameter(property = "extractionDir", defaultValue = "${project.build.directory}/aar-extracted", required = true)
     private String extractionDir;
@@ -81,6 +94,7 @@ public class AarUnpackMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project.repositories}", readonly = true)
 	private List<Repository> projectRepos;
 
+	@SuppressWarnings("unchecked")
 	@Override
     public void execute() throws MojoExecutionException {
 		
@@ -89,8 +103,15 @@ public class AarUnpackMojo extends AbstractMojo {
 		
 		//Keep track of all of the classpath changes that we are making
 		//This is in the form of <Classes JAR, Sources JAR>
-		List<Map.Entry<String, String>> classpathChanges = new ArrayList<Map.Entry<String, String>>();
-		
+		List<Map.Entry<String, String>> classpathChanges = null;
+		Object classpathChangesO =  project.getContextValue(CONTEXT_CLASSPATH);
+		if(null != classpathChangesO && classpathChangesO instanceof List<?>) {
+			classpathChanges = (List<Map.Entry<String, String>>) classpathChangesO;
+		}
+		if(null == classpathChanges) {
+			classpathChanges = new ArrayList<Map.Entry<String, String>>();
+		}
+
 		boolean reloadDependencies = false;
 		if(aars == null || aars.isEmpty()) {
 			//No AAR dependencies were explicitly defined. Automatically scan the project to find AAR dependencies
@@ -243,18 +264,20 @@ public class AarUnpackMojo extends AbstractMojo {
         	throw new MojoExecutionException("Missing \"classes.jar\" in AAR: " + aarFQN);
         }
         
-    	//Copy the sources JAR as well, if present
-        if(aarAbsolutePath.toLowerCase().endsWith(".aar")) { //Basic sanity check
-        	File sourcesJar = new File(aarAbsolutePath.substring(0, aarAbsolutePath.length()-4) + "-sources.jar");
-        	try {
-	        	if(sourcesJar.isFile()) {
-	        		getLog().debug("Copying sources JAR \"" + sourcesJar + "\" to directory \"" + extractDirAbsolutePath + "\".");
-	        		FileUtils.copyFileToDirectory(sourcesJar, extractDir);
-	        	}
-	        } catch (IOException e) {
-				getLog().debug("Error copying sources JAR \"" + sourcesJar + "\" to directory \"" + extractDirAbsolutePath + "\": + \n" + StackTraceCompactor.getCompactStackTrace(e));
-				//Don't throw an exception, source files are optional
-			}
+        if(copySources) {
+        	//Copy the sources JAR as well, if present
+            if(aarAbsolutePath.toLowerCase().endsWith(".aar")) { //Basic sanity check
+            	File sourcesJar = new File(aarAbsolutePath.substring(0, aarAbsolutePath.length()-4) + "-sources.jar");
+            	try {
+    	        	if(sourcesJar.isFile()) {
+    	        		getLog().debug("Copying sources JAR \"" + sourcesJar + "\" to directory \"" + extractDirAbsolutePath + "\".");
+    	        		FileUtils.copyFileToDirectory(sourcesJar, extractDir);
+    	        	}
+    	        } catch (IOException e) {
+    				getLog().debug("Error copying sources JAR \"" + sourcesJar + "\" to directory \"" + extractDirAbsolutePath + "\": + \n" + StackTraceCompactor.getCompactStackTrace(e));
+    				//Don't throw an exception, source files are optional
+    			}
+            }
         }
 		
         //Return the location of the classes.jar file that was just extracted
